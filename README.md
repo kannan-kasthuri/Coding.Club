@@ -1,2 +1,3 @@
 # Coding.Club
-This repository contains the data and code for the coding club at NYU
+By Kasthuri Kannan, PhD.
+This repository contains the data and code for the coding club at NYU.
