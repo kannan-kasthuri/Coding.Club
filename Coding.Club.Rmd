@@ -1,0 +1,375 @@
+---
+title: "Coding Club - Introduction to R - Part II"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br> <!-- This is for space -->
+
+# Synopsis
+
+<br> <!-- This is for space -->
+
+In this tutorial we will first understand R Markdown and then study how to explore data using the *tidyverse* package. These are based on the book R for Data Science.
+
+<br>
+
+---
+
+### R Markdown
+
+---
+
+<br>
+
+*{Getting started - hands on demo}*
+
+<br>
+
+---
+
+1. R Markdown is unified framework for communicating data science.
+
+2. Reproducible and supports several formats
+
+3. R Markdown files are designed to be used in three ways:
+
+    3a. For communicating to decision makers, who want to focus on the conclusions, not the code behind the analysis.
+
+    3b. For collaborating with other data scientists on how you reached the conclusions and the code.
+
+    3c. To act as a lab notebook to jot down not just the results but what you were thinking.
+
+4. Help may not be available through ?, as it integrates lots of external packages. These resources may be useful
+
+    4a. R Markdown Cheat Sheet: Help > Cheatsheets > R Markdown Cheat Sheet,
+
+    4b. R Markdown Reference Guide: Help > Cheatsheets > R Markdown Reference Guide.
+
+5. Both cheatsheets are also available at http://rstudio.com/cheatsheets.
+
+---
+
+### Explore
+
+---
+
+Download the data set *inputevents_cv.csv* from Github
+
+<br>
+
+```{r getData, echo=TRUE, message=FALSE, warning=FALSE, eval=TRUE, cache=TRUE}
+
+# Load the library and get the data. If you don't have this package you need to install it
+library(RCurl) 
+my_URL <- "https://raw.githubusercontent.com/kannan-kasthuri/Coding.Club/master/inputevents_cv.csv"
+my_data <- read.csv(text=getURL(my_URL), header=T)
+
+```
+
+<br> 
+
+You need the *tidyverse* package. Go ahead install the package in the console
+
+` > install.packages("tidyverse")`
+
+<br>
+We can now go ahead and look at the data frame.
+
+```{r displayDataFrame, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Display the data frame
+my_data[1:5, 1:5]
+
+```
+
+<br>
+
+
+Now lets look at the column names of the data frame.
+
+```{r displayColNamesDataFrame, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Look into the columns of the data frame and identify their types 
+# Note: one can equally use the 'str' function 
+sapply(my_data,class)
+
+```
+
+<br>
+
+Lets create a ggplot now
+
+```{r createGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Load the tidyverse library and create a scatter plot of originalamount and originalrate
+library(tidyverse)
+ggplot(data = my_data) + geom_point(mapping = aes(x = originalamount, y = originalrate))
+
+```
+
+<br>
+
+The limits are too off. Set the limits
+
+```{r limitsGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Set the proper limits to identify regions of interest and to exclude outliers
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate)) +
+  xlim(0,100) + ylim(0,500)
+
+```
+
+<br>
+
+General graphing template:
+
+` ggplot(data = <DATA>) + <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))`
+
+<br>
+
+#### Aesthetic mappings
+
+<br>
+We can introduce the asthetic color to map the attribute *originalroute* to the points
+
+```{r colorGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Color the labels of the originalroute class
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, color = originalroute)) + 
+  xlim(0,100) + ylim(0,250) 
+
+```
+ 
+Or we could have mapped *originalroute* to the alpha aesthetic, which controls the transparancy of the points
+
+```{r alphaGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Set transparancy using 'alpha'
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, alpha = originalroute)) + 
+  xlim(0,100) + ylim(0,250) 
+
+```
+
+or to the shape of the points (**Note** ggplot2 will only use six shapes at a time).
+
+```{r shapeGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Set the shape instead of transparancy/color
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, shape = originalroute)) + 
+  xlim(0,100) + ylim(0,250) 
+
+```
+
+ Or you can specify your own color (*note*: the changed x-axis limits)
+
+```{r redColorGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Or specify your own color
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, color = "red")) + 
+  xlim(0,10) + ylim(0,250) 
+
+```
+
+So far none of the plots are helpful in distingushing the number of points found in each class. Another way, particularly useful for categorical variables, is to split your plot into facets, subplots that each display one subset of the data using `facet_wrap()`
+
+```{r facetGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Use 'facet_wrap()' to create facets
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate)) + 
+  xlim(0,10) + ylim(0,250) +
+  facet_wrap(~ originalroute, nrow = 4)
+
+```
+
+In fact, you can add colors to the facets,
+
+``` {r facetColorGgplot, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# We can include colors in 'facet_wrap'
+ggplot(data = my_data) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, color = originalroute)) + 
+  xlim(0,10) + ylim(0,250) +
+  facet_wrap(~ originalroute, nrow = 5)
+
+```
+
+We see that only the classes Gastric/Feeding Tube, Intravenuous, Intravenuous Infusion, Intravenuous Push contain data points. Thus, we may filter only for these labels in the data. This brings us to data transformation aspect of data science in which the `filter()` function could be extremenly useful and can be applied in this situation.
+
+
+``` {r filterData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="hide"}
+
+# First filter the data for the labels that contain the data
+my_filtered_results <- filter(my_data, originalroute == "Gastric/Feeding Tube" | 
+                                originalroute == "Intravenous" | originalroute == "Intravenous Infusion" |
+                                originalroute == "Intravenous Push")
+
+# Plot the filtered data
+ggplot(data = my_filtered_results) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, color = originalroute)) + 
+  xlim(0,10) + ylim(0,250) + facet_wrap(~ originalroute, nrow = 2)
+
+```
+
+To facet our plot on the combination of two variables, add we add `facet_grid()` to the plot. The first argument of `facet_grid()` is also a formula. This time the formula should contain two variable names separated by a ~. We use the attribute *stopped* as one of the variables.
+
+``` {r facetGrid, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="hide"}
+
+# We can also do a facet grid with two variables
+ggplot(data = my_filtered_results) + 
+  geom_point(mapping = aes(x = originalamount, y = originalrate, color = originalroute)) + 
+  xlim(0,10) + ylim(0,250) + facet_grid(stopped ~ originalroute)
+
+```
+
+Thus, we find that even within these four groups, the data mostly consists of medication where the infusion status is not known.
+
+We can also smooth the data by using `geom_smooth()` **geom** object. ggplot2 provides over 30 geoms, and extension packages provide even more (see https://www.ggplot2-exts.org for a sampling). The best way to get a comprehensive overview is the ggplot2 cheatsheet, which you can find at http://rstudio.com/cheatsheets. To learn more about any single geom, use help: ?geom_smooth.
+
+``` {r smoothGeom, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="hide"}
+
+# Smoothing the data using 'geom_smooth()' function
+ggplot(data = my_filtered_results, mapping = 
+         aes(x = originalamount, y = originalrate, color = originalroute)) + 
+         geom_smooth(method = lm) + xlim(0,10) + ylim(0,250) 
+
+```
+
+The smoothing gives an overall picture of the data. We find that as the amount increase the intravenous infusion decreases whereas the gastric/feeding tube or the push remains steady. These types of **directed insights** are the basis for data science.
+
+To get the list of geoms, type the following in the console,
+
+``` 
+> geoms <- help.search("^geom_", package = "ggplot2")`
+> geoms$matches[, 1:2]`
+```
+
+---
+
+### Data Transformations
+
+---
+
+We will study six key `dplyr` library functions that will allow us to solve vast majority of data manipulation challenges:
+
+* Pick observations by their values by `filter()`, which we already saw.
+
+* Reorder the rows applying `arrange()`.
+
+* Pick variables by their names using `select()`.
+
+* Create new variables with functions of existing variables through `mutate()`.
+
+* Collapse many values down to a single summary using `summarise()`.
+
+* And the most important of all which is the `group_by()` operation which can be used with any of the above five.
+
+<br>
+
+`arrange()` works similarly to `filter()` except that instead of selecting rows, it changes their order. It takes a data frame and a set of column names (or more complicated expressions) to order by.
+
+``` {r arrangeData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# Arranging the filtered data in the descending order of original rate
+my_arranged_results <- arrange(my_filtered_results, desc(originalrate))
+head(my_arranged_results)
+
+```
+
+
+Note that we changed the `results` parameter to "show" in the code:
+
+`{r arrangeData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}`
+
+that shows the results (which we want).
+
+We see that this shows all the columns but we may need only a few. This brings us to the next transformation which is `select()`, that can be used to specify only the columns of interest. We may also want to drop the missing values in the selected columns.
+
+``` {r selectData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# Here we are selecting only the itemid, originalamount, originalrate, originalroute
+my_selected_results <- select(my_arranged_results, itemid, originalamount, originalrate, originalroute)
+head(my_selected_results)
+
+```
+
+By default the 'NA' or the missing values are listed in the end which can be viewed by using the function 'tail'
+
+
+``` {r viewTail, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# View the last few entries of the dataset
+tail(my_selected_results)
+
+```
+
+We can remove the missing values using the function `drop_na()`
+
+``` {r filterMissingData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# Filtering the missing values using 'drop_na()' and view them
+my_droppedNA_results <- drop_na(my_selected_results)
+tail(my_droppedNA_results)
+
+```
+
+
+Besides selecting sets of existing columns, it’s often useful to add new columns that are functions of existing columns. That’s the job of `mutate()`. For instance, in the selected data above, we may want to see how long the patients were supposed to be given the medication. Since we have the original amount and the original rate, dividing the amount by the rate will give us the time the medication was expected to be admistered. But first we need to remove the entries where is the rate is zero! 
+
+``` {r filterZeroRateData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# Filtering the rows where the orgininal rate is zero and view them
+my_filtered_zero_results <- filter(my_droppedNA_results, originalrate > 0)
+tail(my_filtered_zero_results)
+
+```
+
+
+``` {r mutateData, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# Creating a new variable 'expectedtime' based on amount and rate
+# Note: we round the new variable to two decimal places
+my_mutated_results <- mutate(my_filtered_zero_results, expectedtime = round(originalamount/originalrate,2))
+head(my_mutated_results)
+
+```
+
+There are several arithmetic operations and functions one can use with `mutate()`. For a summary, look at the 'Data Transformation' chapter in the book, R for Data Science. 
+
+We note that all the item with id *30013* have the same expected time. Now, one may want to ask the question "What are the mean values for an item given through a particular route?" This question is best answered by the operation `group_by()` and using `summary()`.
+
+``` {r groupByAndSummarize, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE, results="show"}
+
+# First group the data with the variable 'itemid' and then by 'originalroute'
+my_grouped_results <- group_by(my_mutated_results, itemid, originalroute)
+# We then find the mean of the values, rounded to 2 decimal places
+my_summarized_results <- summarize(my_grouped_results, count = n(), 
+                                   mean_amount = round(mean(originalamount),2), 
+                                   mean_rate = round(mean(originalrate),2), 
+                                   mean_time = round(mean(expectedtime),2))
+# View the first few results
+head(my_summarized_results)
+
+```
+
+This summary can now be plotted for data exploration.
+
+``` {r plotSummary, message=FALSE, warning=FALSE, eval=TRUE, dependson="getData",cache=TRUE}
+
+# Plot the summary and use facets
+ggplot(data = my_summarized_results) + 
+  geom_point(mapping = aes(x = mean_rate, y = mean_time, color = originalroute)) +
+  xlim(0,100) + ylim(0,50) + facet_wrap(~ originalroute, nrow=2) 
+
+```
+
+This plot tells that as the mean rate gets higher the expected time for admistering a drug through intravenous infusion remains low, whereas for the other three routes the expected time gets higher as the rate gets lower.
